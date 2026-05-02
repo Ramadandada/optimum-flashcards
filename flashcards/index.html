@@ -170,6 +170,152 @@
     border-color: #D4C8B5;
   }
 
+  /* Header right cluster (help + stats) */
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .help-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid #D4C8B5;
+    color: #8A8175;
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 600;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .help-btn:hover {
+    border-color: #C8932F;
+    color: #C8932F;
+  }
+
+  /* First-use hint (one-time, fades after first interaction) */
+  .first-hint {
+    background: rgba(200, 147, 47, 0.08);
+    border: 1px solid rgba(200, 147, 47, 0.30);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    color: #1A2540;
+    font-size: 13px;
+    line-height: 1.5;
+    transition: opacity 0.4s ease;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .first-hint.fading { opacity: 0; }
+  .first-hint-icon {
+    color: #C8932F;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 600;
+    flex-shrink: 0;
+    line-height: 1.4;
+  }
+  .first-hint strong { color: #C8932F; font-weight: 700; }
+
+  /* Help modal */
+  .help-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(26, 37, 64, 0.28);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .help-modal.open { display: flex; }
+  .help-card {
+    background: #FBF8F1;
+    border: 1px solid #E4DDD0;
+    border-radius: 12px;
+    padding: 28px 24px;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(26,37,64,0.06), 0 24px 64px rgba(26,37,64,0.10);
+  }
+  .help-title {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1A2540;
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+  .help-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: #8A8175;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .help-section { margin-bottom: 16px; }
+  .help-section h4 {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1A2540;
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+  .help-section p {
+    font-size: 13px;
+    line-height: 1.55;
+    color: #4F5A6E;
+  }
+  .help-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .help-row .help-pill {
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    min-width: 90px;
+    text-align: center;
+  }
+  .help-pill.master { background: #3A9D6A; color: #FFFFFF; }
+  .help-pill.review { background: rgba(176, 122, 26, 0.12); color: #B07A1A; border: 1px solid rgba(176, 122, 26, 0.40); }
+  .help-pill.skip { background: transparent; color: #8A8175; border: 1px solid #E4DDD0; }
+  .help-row-text {
+    color: #1A2540;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .help-close {
+    display: block;
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px;
+    background: #1A2540;
+    color: #FBF8F1;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
   /* Filter button (compact pill) */
   .filter-btn {
     padding: 8px 12px;
@@ -450,10 +596,15 @@
     padding: 40px 16px 20px;
     padding-bottom: max(20px, env(safe-area-inset-bottom));
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 0;
     max-width: 720px;
     margin: 0 auto;
     z-index: 10;
+  }
+  .actions-row {
+    display: flex;
+    gap: 8px;
   }
   .act-back, .act-skip {
     flex: 0 0 auto;
@@ -844,6 +995,7 @@ const CARDS = [
 const CATEGORIES = ['All', 'Cold Call', 'Phone', '10-Step Pitch', 'Closing', 'Comp Plan', 'Products', 'Water Science', 'Process', 'Mindset'];
 const STORAGE_KEY = 'optimum-card-states';
 const WELCOME_KEY = 'optimum-welcome-seen';
+const HINT_KEY = 'optimum-hint-seen';
 
 // ========== STATE ==========
 let states = {};
@@ -919,10 +1071,13 @@ function render() {
           <div class="brand-top">OPTIMUM</div>
           <div class="brand-sub">SALES BIBLE · DRILL</div>
         </div>
-        <button class="stats-btn" id="stats-toggle">
-          <span class="pct-big">${overall.pct}%</span>
-          <span class="pct-label">${overall.mastered}/${overall.total}</span>
-        </button>
+        <div class="header-right">
+          <button class="help-btn" id="help-toggle" aria-label="How this works" title="How this works">i</button>
+          <button class="stats-btn" id="stats-toggle">
+            <span class="pct-big">${overall.pct}%</span>
+            <span class="pct-label">${overall.mastered}/${overall.total}</span>
+          </button>
+        </div>
       </header>
 
       <div class="modes">
@@ -991,28 +1146,71 @@ function render() {
 
       ${currentDeck.length > 0 ? `
         <div class="actions">
-          ${!revealed ? `
-            <button class="act-back" id="act-back">← BACK</button>
-            <button class="act-reveal" id="act-reveal">REVEAL <span class="kbd-light">SPACE</span></button>
-            <button class="act-skip" id="act-skip">SKIP →</button>
-          ` : `
-            <button class="act-drill" data-action="drill">
-              <span class="act-num">2</span>
-              <span>NEED DRILL</span>
-            </button>
-            <button class="act-master" data-action="mastered">
-              <span class="act-num">1</span>
-              <span>GOT IT</span>
-            </button>
-            <button class="act-skip-sm" data-action="skip">
-              <span class="act-num">3</span>
-              <span>SKIP</span>
-            </button>
-          `}
+          ${revealed && !localStorage.getItem(HINT_KEY) ? `
+            <div class="first-hint" id="first-hint">
+              <span class="first-hint-icon">i</span>
+              <span><strong>GOT IT</strong> if you know it. <strong>REVIEW LATER</strong> to come back to it. <strong>SKIP</strong> to move on without marking.</span>
+            </div>
+          ` : ''}
+          <div class="actions-row">
+            ${!revealed ? `
+              <button class="act-back" id="act-back">← BACK</button>
+              <button class="act-reveal" id="act-reveal">REVEAL <span class="kbd-light">SPACE</span></button>
+              <button class="act-skip" id="act-skip">SKIP →</button>
+            ` : `
+              <button class="act-drill" data-action="drill">
+                <span class="act-num">2</span>
+                <span>REVIEW LATER</span>
+              </button>
+              <button class="act-master" data-action="mastered">
+                <span class="act-num">1</span>
+                <span>GOT IT</span>
+              </button>
+              <button class="act-skip-sm" data-action="skip">
+                <span class="act-num">3</span>
+                <span>SKIP</span>
+              </button>
+            `}
+          </div>
         </div>
       ` : ''}
 
       <div class="overlay" id="overlay"></div>
+
+      <div class="help-modal" id="help-modal" role="dialog" aria-label="How this works">
+        <div class="help-card">
+          <div class="help-title">How this works</div>
+          <div class="help-sub">Three actions, one goal</div>
+
+          <div class="help-section">
+            <h4>After you reveal an answer:</h4>
+            <div class="help-row">
+              <span class="help-pill master">GOT IT</span>
+              <span class="help-row-text">You know it cold. Marks it mastered.</span>
+            </div>
+            <div class="help-row">
+              <span class="help-pill review">REVIEW LATER</span>
+              <span class="help-row-text">You want to come back to this one. Flagged for "Drill" mode.</span>
+            </div>
+            <div class="help-row">
+              <span class="help-pill skip">SKIP</span>
+              <span class="help-row-text">Move on without changing anything. Comes back in normal rotation.</span>
+            </div>
+          </div>
+
+          <div class="help-section">
+            <h4>Three modes:</h4>
+            <p><strong style="color:#1A2540">All</strong> = every card. <strong style="color:#1A2540">Drill</strong> = only cards you flagged "Review Later". <strong style="color:#1A2540">New</strong> = cards you haven't touched yet.</p>
+          </div>
+
+          <div class="help-section">
+            <h4>Categories:</h4>
+            <p>Tap the category pill to focus on one section — Cold Call, Phone, 10-Step Pitch, etc.</p>
+          </div>
+
+          <button class="help-close" id="help-close">GOT IT</button>
+        </div>
+      </div>
 
       <aside class="filter-sheet" id="filter-sheet" role="dialog" aria-label="Category filter">
         <div class="filter-sheet-handle"></div>
@@ -1130,10 +1328,24 @@ function attachListeners() {
   // Action buttons (mastered/drill/skip)
   document.querySelectorAll('[data-action]').forEach(el => {
     el.addEventListener('click', () => {
+      // Dismiss first-use hint after first action
+      if (!localStorage.getItem(HINT_KEY)) {
+        localStorage.setItem(HINT_KEY, '1');
+      }
       const action = el.dataset.action;
       if (action === 'skip') goSkip();
       else mark(action);
     });
+  });
+
+  // Help modal
+  const helpToggle = document.getElementById('help-toggle');
+  if (helpToggle) helpToggle.addEventListener('click', openHelp);
+  const helpClose = document.getElementById('help-close');
+  if (helpClose) helpClose.addEventListener('click', closeHelp);
+  const helpModal = document.getElementById('help-modal');
+  if (helpModal) helpModal.addEventListener('click', (e) => {
+    if (e.target === helpModal) closeHelp();
   });
 
   // Stats panel
@@ -1202,6 +1414,14 @@ function closeAllPanels() {
   closeFilterSheet();
 }
 
+function openHelp() {
+  document.getElementById('help-modal').classList.add('open');
+}
+
+function closeHelp() {
+  document.getElementById('help-modal').classList.remove('open');
+}
+
 // Keyboard shortcuts
 window.addEventListener('keydown', (e) => {
   if (document.getElementById('welcome') && !document.getElementById('welcome').classList.contains('hidden')) return;
@@ -1210,8 +1430,10 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     const filterOpen = document.getElementById('filter-sheet')?.classList.contains('open');
     const statsOpen = document.getElementById('stats-panel')?.classList.contains('open');
-    if (filterOpen || statsOpen) {
+    const helpOpen = document.getElementById('help-modal')?.classList.contains('open');
+    if (filterOpen || statsOpen || helpOpen) {
       closeAllPanels();
+      closeHelp();
       return;
     }
   }
@@ -1219,6 +1441,7 @@ window.addEventListener('keydown', (e) => {
   // Don't fire shortcuts while a panel is open
   if (document.getElementById('filter-sheet')?.classList.contains('open')) return;
   if (document.getElementById('stats-panel')?.classList.contains('open')) return;
+  if (document.getElementById('help-modal')?.classList.contains('open')) return;
 
   if (currentDeck.length === 0) return;
   if (e.key === ' ') {
@@ -1247,10 +1470,11 @@ function showWelcome() {
       <div class="welcome-title">90 cards. Every script worth memorizing.</div>
       <div class="welcome-body">Drill the lines that close deals. Tap to reveal answers, mark what you know, drill what you don't.</div>
       <ul class="welcome-list">
-        <li>Filter by category to focus your study session</li>
+        <li>Tap the category pill to focus on one section</li>
+        <li>"Got It" → mastered. "Review Later" → cards you want to come back to.</li>
         <li>"Drill" mode shows only cards you flagged for review</li>
         <li>Progress saves automatically in your browser</li>
-        <li>Keyboard: <strong>Space</strong> reveals · <strong>1</strong> got it · <strong>2</strong> drill · <strong>3</strong> skip</li>
+        <li>Keyboard: <strong>Space</strong> reveals · <strong>1</strong> got it · <strong>2</strong> review · <strong>3</strong> skip</li>
       </ul>
       <button class="welcome-btn" id="welcome-start">START DRILLING</button>
     </div>
