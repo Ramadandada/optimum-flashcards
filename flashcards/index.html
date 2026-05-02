@@ -132,6 +132,12 @@
     gap: 8px;
     flex-wrap: wrap;
   }
+  .modes-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
   .mode-group {
     display: flex;
     background: #FBF8F1;
@@ -168,6 +174,83 @@
   .shuffle-btn.active {
     color: #C8932F;
     border-color: #D4C8B5;
+  }
+
+  /* Audio toggle pill */
+  .audio-btn {
+    padding: 8px 14px;
+    background: #FBF8F1;
+    color: #8A8175;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    font-family: 'JetBrains Mono', monospace;
+    border-radius: 8px;
+    border: 1px solid #E4DDD0;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .audio-btn:hover { border-color: #D4C8B5; }
+  .audio-btn.active {
+    color: #C8932F;
+    border-color: #C8932F;
+    background: rgba(200, 147, 47, 0.06);
+  }
+  .audio-btn.active .audio-pulse {
+    width: 6px;
+    height: 6px;
+    background: #C8932F;
+    border-radius: 50%;
+    animation: audio-pulse 1.2s ease-in-out infinite;
+  }
+  .audio-pulse {
+    width: 6px;
+    height: 6px;
+    background: #D4C8B5;
+    border-radius: 50%;
+  }
+  @keyframes audio-pulse {
+    0%, 100% { opacity: 0.4; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+
+  /* Audio status banner (shown above card when audio playing) */
+  .audio-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(200, 147, 47, 0.10);
+    border: 1px solid rgba(200, 147, 47, 0.30);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: #1A2540;
+  }
+  .audio-banner-dot {
+    width: 8px;
+    height: 8px;
+    background: #C8932F;
+    border-radius: 50%;
+    animation: audio-pulse 1.2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  .audio-banner-stage {
+    color: #C8932F;
+    text-transform: uppercase;
+  }
+  .audio-banner-pause {
+    margin-left: auto;
+    color: #8A8175;
+    font-family: inherit;
+    font-size: 10px;
+    padding: 4px 10px;
+    border: 1px solid #D4C8B5;
+    border-radius: 4px;
   }
 
   /* Header right cluster (help + stats) */
@@ -996,6 +1079,11 @@ const CATEGORIES = ['All', 'Cold Call', 'Phone', '10-Step Pitch', 'Closing', 'Co
 const STORAGE_KEY = 'optimum-card-states';
 const WELCOME_KEY = 'optimum-welcome-seen';
 const HINT_KEY = 'optimum-hint-seen';
+const AUDIO_KEY = 'optimum-audio-on';
+
+// Audio drill timing (ms)
+const AUDIO_QUESTION_PAUSE = 4000;  // gap after reading question (for user to recite)
+const AUDIO_ANSWER_GAP = 2000;      // gap after reading answer (before next card)
 
 // ========== STATE ==========
 let states = {};
@@ -1005,6 +1093,14 @@ let shuffled = false;
 let position = 0;
 let revealed = false;
 let currentDeck = [];
+
+// Audio state (always starts OFF — autoplay needs a user gesture)
+let audioOn = false;
+let audioStage = null;        // 'question' | 'pause' | 'answer' | 'gap' | null
+let audioPaused = false;
+let audioTimer = null;        // pending setTimeout id
+let audioVoice = null;        // selected SpeechSynthesisVoice
+let audioInitialized = false; // first user gesture triggers init
 
 // Load from localStorage
 try {
@@ -1093,9 +1189,15 @@ function render() {
             <span class="filter-chev">▾</span>
           </button>
         </div>
-        <button class="shuffle-btn ${shuffled ? 'active' : ''}" id="shuffle-toggle">
-          ↯ ${shuffled ? 'SHUFFLED' : 'IN ORDER'}
-        </button>
+        <div class="modes-right">
+          <button class="audio-btn ${audioOn ? 'active' : ''}" id="audio-toggle" title="Hands-free drill mode">
+            <span class="audio-pulse"></span>
+            ${audioOn ? 'AUDIO' : 'AUDIO'}
+          </button>
+          <button class="shuffle-btn ${shuffled ? 'active' : ''}" id="shuffle-toggle">
+            ↯ ${shuffled ? 'SHUFFLED' : 'IN ORDER'}
+          </button>
+        </div>
       </div>
 
       <div class="progress-wrap">
@@ -1112,6 +1214,15 @@ function render() {
           <span style="color: #4F5A6E">${stats.fresh} new</span>
         </div>
       </div>
+
+      ${audioOn && currentDeck.length > 0 ? `
+        <div class="audio-banner">
+          <span class="audio-banner-dot"></span>
+          <span class="audio-banner-stage">${audioStage || 'ready'}</span>
+          <span style="color:#8A8175;">${audioStage === 'question' ? 'reading question' : audioStage === 'pause' ? 'your turn — recite aloud' : audioStage === 'answer' ? 'reading answer' : audioStage === 'gap' ? 'next card incoming' : 'tap a card or wait'}</span>
+          <button class="audio-banner-pause" id="audio-pause">${audioPaused ? 'RESUME' : 'PAUSE'}</button>
+        </div>
+      ` : ''}
 
       <main class="main">
         ${currentDeck.length === 0 ? `
@@ -1208,6 +1319,11 @@ function render() {
             <p>Tap the category pill to focus on one section — Cold Call, Phone, 10-Step Pitch, etc.</p>
           </div>
 
+          <div class="help-section">
+            <h4>Audio mode (hands-free):</h4>
+            <p>Tap <strong style="color:#1A2540">AUDIO</strong> to drill in the car. Reads the question, pauses 4 seconds for you to recite aloud, reads the answer, then auto-advances. Tap any action button to take manual control.</p>
+          </div>
+
           <button class="help-close" id="help-close">GOT IT</button>
         </div>
       </div>
@@ -1275,31 +1391,37 @@ function attachListeners() {
   // Category items inside the filter sheet
   document.querySelectorAll('.filter-item').forEach(el => {
     el.addEventListener('click', () => {
+      stopAudio();
       activeCat = el.dataset.cat;
       position = 0;
       revealed = false;
       closeFilterSheet();
       render();
+      if (audioOn && !audioPaused) startAudioForCurrent();
     });
   });
 
   // Mode buttons
   document.querySelectorAll('.mode-btn').forEach(el => {
     el.addEventListener('click', () => {
+      stopAudio();
       mode = el.dataset.mode;
       position = 0;
       revealed = false;
       render();
+      if (audioOn && !audioPaused) startAudioForCurrent();
     });
   });
 
   // Shuffle
   const shuffleBtn = document.getElementById('shuffle-toggle');
   if (shuffleBtn) shuffleBtn.addEventListener('click', () => {
+    stopAudio();
     shuffled = !shuffled;
     position = 0;
     revealed = false;
     render();
+    if (audioOn && !audioPaused) startAudioForCurrent();
   });
 
   // Card tap to reveal
@@ -1348,6 +1470,12 @@ function attachListeners() {
     if (e.target === helpModal) closeHelp();
   });
 
+  // Audio toggle
+  const audioToggle = document.getElementById('audio-toggle');
+  if (audioToggle) audioToggle.addEventListener('click', toggleAudio);
+  const audioPause = document.getElementById('audio-pause');
+  if (audioPause) audioPause.addEventListener('click', pauseResumeAudio);
+
   // Stats panel
   const statsToggle = document.getElementById('stats-toggle');
   if (statsToggle) statsToggle.addEventListener('click', openStats);
@@ -1372,21 +1500,27 @@ function mark(status) {
   if (status === null) delete states[card.id];
   else states[card.id] = status;
   saveStates();
+  stopAudio();
   revealed = false;
   position = position + 1 < currentDeck.length ? position + 1 : 0;
   render();
+  if (audioOn && !audioPaused) startAudioForCurrent();
 }
 
 function goSkip() {
+  stopAudio();
   revealed = false;
   position = position + 1 < currentDeck.length ? position + 1 : 0;
   render();
+  if (audioOn && !audioPaused) startAudioForCurrent();
 }
 
 function goBack() {
+  stopAudio();
   revealed = false;
   position = position > 0 ? position - 1 : Math.max(currentDeck.length - 1, 0);
   render();
+  if (audioOn && !audioPaused) startAudioForCurrent();
 }
 
 function openStats() {
@@ -1420,6 +1554,159 @@ function openHelp() {
 
 function closeHelp() {
   document.getElementById('help-modal').classList.remove('open');
+}
+
+// ========== AUDIO ENGINE ==========
+function audioSupported() {
+  return typeof window !== 'undefined' && 'speechSynthesis' in window;
+}
+
+function pickVoice() {
+  if (!audioSupported()) return null;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return null;
+  // Prefer en-US, then en-*, then any
+  const enUS = voices.find(v => v.lang === 'en-US' && v.localService);
+  if (enUS) return enUS;
+  const en = voices.find(v => v.lang.startsWith('en'));
+  return en || voices[0];
+}
+
+function initAudio() {
+  if (!audioSupported()) return false;
+  if (audioInitialized) return true;
+  // Touch the API once with a silent utterance to satisfy autoplay policies
+  try {
+    const u = new SpeechSynthesisUtterance('');
+    u.volume = 0;
+    window.speechSynthesis.speak(u);
+  } catch(e) {}
+  audioInitialized = true;
+  return true;
+}
+
+function toggleAudio() {
+  if (!audioSupported()) {
+    alert('Speech synthesis is not supported on this browser.');
+    return;
+  }
+  audioOn = !audioOn;
+  if (audioOn) {
+    initAudio();
+    audioPaused = false;
+    audioStage = null;
+    render();
+    startAudioForCurrent();
+  } else {
+    stopAudio();
+    render();
+  }
+}
+
+function stopAudio() {
+  if (audioTimer) {
+    clearTimeout(audioTimer);
+    audioTimer = null;
+  }
+  if (audioSupported()) {
+    try { window.speechSynthesis.cancel(); } catch(e) {}
+  }
+  audioStage = null;
+}
+
+function normalizeForSpeech(text) {
+  // Newlines → natural pause; collapse multiple spaces; trim list markers like "1)"
+  return String(text)
+    .replace(/\n+/g, '. ')
+    .replace(/\s+/g, ' ')
+    .replace(/\b(\d+)\)/g, '$1.')
+    .trim();
+}
+
+function speak(text, onEnd) {
+  if (!audioSupported() || audioPaused) {
+    if (onEnd) onEnd();
+    return;
+  }
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(normalizeForSpeech(text));
+    if (!audioVoice) audioVoice = pickVoice();
+    if (audioVoice) u.voice = audioVoice;
+    u.rate = 0.95;
+    u.pitch = 1.0;
+    u.volume = 1.0;
+    u.onend = () => { if (onEnd) onEnd(); };
+    u.onerror = () => { if (onEnd) onEnd(); };
+    window.speechSynthesis.speak(u);
+  } catch(e) {
+    if (onEnd) onEnd();
+  }
+}
+
+function startAudioForCurrent() {
+  if (!audioOn || audioPaused) return;
+  const card = currentDeck[position];
+  if (!card) return;
+
+  // Stage 1: read the question
+  audioStage = 'question';
+  updateAudioBanner();
+  // Build a more natural read of the question with category preface
+  const intro = `${card.cat}. ${card.q}`;
+  speak(intro, () => {
+    if (!audioOn || audioPaused) return;
+    // Stage 2: pause for the user to recite
+    audioStage = 'pause';
+    updateAudioBanner();
+    audioTimer = setTimeout(() => {
+      if (!audioOn || audioPaused) return;
+      // Stage 3: reveal + read the answer
+      revealed = true;
+      render();
+      audioStage = 'answer';
+      updateAudioBanner();
+      speak(card.a, () => {
+        if (!audioOn || audioPaused) return;
+        // Stage 4: gap, then auto-advance
+        audioStage = 'gap';
+        updateAudioBanner();
+        audioTimer = setTimeout(() => {
+          if (!audioOn || audioPaused) return;
+          // Auto-advance: don't change card state, just move on
+          revealed = false;
+          position = position + 1 < currentDeck.length ? position + 1 : 0;
+          render();
+          startAudioForCurrent();
+        }, AUDIO_ANSWER_GAP);
+      });
+    }, AUDIO_QUESTION_PAUSE);
+  });
+}
+
+function updateAudioBanner() {
+  const stage = document.querySelector('.audio-banner-stage');
+  if (stage) stage.textContent = audioStage || 'ready';
+  const desc = stage?.nextElementSibling;
+  if (desc) {
+    desc.textContent = audioStage === 'question' ? 'reading question'
+      : audioStage === 'pause' ? 'your turn — recite aloud'
+      : audioStage === 'answer' ? 'reading answer'
+      : audioStage === 'gap' ? 'next card incoming'
+      : 'tap a card or wait';
+  }
+}
+
+function pauseResumeAudio() {
+  audioPaused = !audioPaused;
+  if (audioPaused) {
+    if (audioTimer) { clearTimeout(audioTimer); audioTimer = null; }
+    if (audioSupported()) { try { window.speechSynthesis.cancel(); } catch(e) {} }
+  } else {
+    // Resume from current stage by re-starting the card flow
+    startAudioForCurrent();
+  }
+  render();
 }
 
 // Keyboard shortcuts
@@ -1486,6 +1773,18 @@ function showWelcome() {
     setTimeout(() => welcome.remove(), 300);
   });
 }
+
+// Voice list loads async on some browsers
+if (audioSupported() && window.speechSynthesis.onvoiceschanged !== undefined) {
+  window.speechSynthesis.onvoiceschanged = () => { audioVoice = pickVoice(); };
+}
+
+// Stop audio if the tab is hidden (saves battery, prevents double-speak on resume)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && audioOn && !audioPaused) {
+    pauseResumeAudio();
+  }
+});
 
 // ========== INIT ==========
 render();
