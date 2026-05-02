@@ -176,6 +176,106 @@
     border-color: #D4C8B5;
   }
 
+  /* Quiz mode card accent */
+  .card.quiz-mode {
+    border-left: 3px solid #C8932F;
+  }
+
+  /* Quiz answer input */
+  .quiz-input-wrap {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .quiz-input-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: #8A8175;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .quiz-input {
+    width: 100%;
+    min-height: 100px;
+    padding: 14px 16px;
+    background: #F4EFE5;
+    border: 1px solid #E4DDD0;
+    border-radius: 8px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #1A2540;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .quiz-input:focus {
+    border-color: #C8932F;
+    box-shadow: 0 0 0 3px rgba(200, 147, 47, 0.12);
+  }
+  .quiz-input::placeholder { color: #8A8175; font-style: italic; }
+  .quiz-check-btn {
+    align-self: flex-start;
+    padding: 10px 18px;
+    background: #1A2540;
+    color: #FBF8F1;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    font-family: 'JetBrains Mono', monospace;
+    transition: opacity 0.15s;
+  }
+  .quiz-check-btn:hover { opacity: 0.92; }
+
+  /* Quiz comparison view (after check) */
+  .quiz-compare {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 6px;
+  }
+  .quiz-compare-block {
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: 1px solid #E4DDD0;
+    background: #F4EFE5;
+  }
+  .quiz-compare-block.actual {
+    border-color: #C8932F;
+    background: rgba(200, 147, 47, 0.06);
+  }
+  .quiz-compare-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: #8A8175;
+    font-weight: 600;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .quiz-compare-block.actual .quiz-compare-label { color: #C8932F; }
+  .quiz-compare-text {
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #1A2540;
+    white-space: pre-line;
+  }
+  .quiz-compare-text.empty {
+    color: #8A8175;
+    font-style: italic;
+  }
+  .quiz-compare-text.script {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 16px;
+    padding-left: 12px;
+    border-left: 2px solid #C8932F;
+  }
+
   /* Audio toggle pill */
   .audio-btn {
     padding: 8px 14px;
@@ -1094,6 +1194,10 @@ let position = 0;
 let revealed = false;
 let currentDeck = [];
 
+// Quiz state
+let quizChecked = false;       // has the user submitted their attempt?
+let quizAnswer = '';           // user's typed attempt
+
 // Audio state (always starts OFF — autoplay needs a user gesture)
 let audioOn = false;
 let audioStage = null;        // 'question' | 'pause' | 'answer' | 'gap' | null
@@ -1117,6 +1221,7 @@ function getDeck() {
   let pool = activeCat === 'All' ? CARDS : CARDS.filter(c => c.cat === activeCat);
   if (mode === 'drill') pool = pool.filter(c => states[c.id] === 'drill');
   if (mode === 'new') pool = pool.filter(c => !states[c.id]);
+  // 'quiz' mode shows the same pool as 'all' but with retrieval-practice UX
   if (shuffled) {
     const arr = [...pool];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -1182,6 +1287,7 @@ function render() {
             <button class="mode-btn ${mode === 'all' ? 'active' : ''}" data-mode="all">ALL</button>
             <button class="mode-btn ${mode === 'drill' ? 'active' : ''}" data-mode="drill">DRILL</button>
             <button class="mode-btn ${mode === 'new' ? 'active' : ''}" data-mode="new">NEW</button>
+            <button class="mode-btn ${mode === 'quiz' ? 'active' : ''}" data-mode="quiz">QUIZ</button>
           </div>
           <button class="filter-btn" id="filter-toggle" aria-haspopup="true">
             <span class="filter-chev">▦</span>
@@ -1235,13 +1341,34 @@ function render() {
             </div>
           </div>
         ` : `
-          <div class="card fade-in" id="card">
+          <div class="card fade-in ${mode === 'quiz' ? 'quiz-mode' : ''}" id="card">
             <div class="card-header">
               <span class="card-cat">${escapeHtml(card.cat)}</span>
               <span>#${String(card.id).padStart(2, '0')}</span>
             </div>
             <div class="card-body">
-              ${!revealed ? `
+              ${mode === 'quiz' ? `
+                <div class="card-label">${card.type === 'script' ? 'WRITE THE SCRIPT' : card.type === 'list' ? 'WRITE THE LIST' : 'WRITE YOUR ANSWER'}</div>
+                <div class="card-question">${escapeHtml(card.q)}</div>
+                ${!quizChecked ? `
+                  <div class="quiz-input-wrap">
+                    <span class="quiz-input-label">Your answer</span>
+                    <textarea class="quiz-input" id="quiz-input" placeholder="Type from memory. Don't peek." rows="4">${escapeHtml(quizAnswer)}</textarea>
+                    <button class="quiz-check-btn" id="quiz-check">CHECK ANSWER</button>
+                  </div>
+                ` : `
+                  <div class="quiz-compare">
+                    <div class="quiz-compare-block">
+                      <div class="quiz-compare-label">Your answer</div>
+                      <div class="quiz-compare-text ${quizAnswer.trim() ? '' : 'empty'}">${quizAnswer.trim() ? escapeHtml(quizAnswer) : 'no answer typed'}</div>
+                    </div>
+                    <div class="quiz-compare-block actual">
+                      <div class="quiz-compare-label">Actual ${card.type === 'script' ? 'script' : card.type === 'list' ? 'list' : 'answer'}</div>
+                      <div class="quiz-compare-text ${card.type === 'script' ? 'script' : ''}">${escapeHtml(card.a)}</div>
+                    </div>
+                  </div>
+                `}
+              ` : !revealed ? `
                 <div class="card-label">PROMPT</div>
                 <div class="card-question">${escapeHtml(card.q)}</div>
                 <div class="tap-hint">tap to reveal · or press <span class="kbd">space</span></div>
@@ -1264,7 +1391,21 @@ function render() {
             </div>
           ` : ''}
           <div class="actions-row">
-            ${!revealed ? `
+            ${mode === 'quiz' ? (
+              !quizChecked ? `
+                <button class="act-back" id="act-back">← BACK</button>
+                <button class="act-reveal" id="act-skip">SKIP →</button>
+              ` : `
+                <button class="act-drill" data-action="drill">
+                  <span class="act-num">2</span>
+                  <span>REVIEW LATER</span>
+                </button>
+                <button class="act-master" data-action="mastered">
+                  <span class="act-num">1</span>
+                  <span>GOT IT</span>
+                </button>
+              `
+            ) : !revealed ? `
               <button class="act-back" id="act-back">← BACK</button>
               <button class="act-reveal" id="act-reveal">REVEAL <span class="kbd-light">SPACE</span></button>
               <button class="act-skip" id="act-skip">SKIP →</button>
@@ -1310,8 +1451,8 @@ function render() {
           </div>
 
           <div class="help-section">
-            <h4>Three modes:</h4>
-            <p><strong style="color:#1A2540">All</strong> = every card. <strong style="color:#1A2540">Drill</strong> = only cards you flagged "Review Later". <strong style="color:#1A2540">New</strong> = cards you haven't touched yet.</p>
+            <h4>Four modes:</h4>
+            <p><strong style="color:#1A2540">All</strong> = every card. <strong style="color:#1A2540">Drill</strong> = only cards you flagged "Review Later". <strong style="color:#1A2540">New</strong> = cards you haven't touched yet. <strong style="color:#1A2540">Quiz</strong> = type your answer first, then compare to the real one (retrieval practice).</p>
           </div>
 
           <div class="help-section">
@@ -1395,6 +1536,7 @@ function attachListeners() {
       activeCat = el.dataset.cat;
       position = 0;
       revealed = false;
+      resetQuizState();
       closeFilterSheet();
       render();
       if (audioOn && !audioPaused) startAudioForCurrent();
@@ -1408,6 +1550,13 @@ function attachListeners() {
       mode = el.dataset.mode;
       position = 0;
       revealed = false;
+      resetQuizState();
+      // Audio + quiz don't mix well — typing requires focus, audio interrupts.
+      // Auto-disable audio when entering quiz mode.
+      if (mode === 'quiz' && audioOn) {
+        audioOn = false;
+        stopAudio();
+      }
       render();
       if (audioOn && !audioPaused) startAudioForCurrent();
     });
@@ -1420,13 +1569,17 @@ function attachListeners() {
     shuffled = !shuffled;
     position = 0;
     revealed = false;
+    resetQuizState();
     render();
     if (audioOn && !audioPaused) startAudioForCurrent();
   });
 
-  // Card tap to reveal
+  // Card tap to reveal (disabled in quiz mode)
   const cardEl = document.getElementById('card');
-  if (cardEl) cardEl.addEventListener('click', () => {
+  if (cardEl) cardEl.addEventListener('click', (e) => {
+    if (mode === 'quiz') return;
+    // Don't intercept clicks on inputs / buttons inside the card
+    if (e.target.closest('button, input, textarea')) return;
     if (!revealed) {
       revealed = true;
       render();
@@ -1476,6 +1629,21 @@ function attachListeners() {
   const audioPause = document.getElementById('audio-pause');
   if (audioPause) audioPause.addEventListener('click', pauseResumeAudio);
 
+  // Quiz input — track typing in module state
+  const quizInput = document.getElementById('quiz-input');
+  if (quizInput) {
+    quizInput.addEventListener('input', (e) => { quizAnswer = e.target.value; });
+    // Cmd+Enter / Ctrl+Enter submits
+    quizInput.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        checkQuiz();
+      }
+    });
+  }
+  const quizCheck = document.getElementById('quiz-check');
+  if (quizCheck) quizCheck.addEventListener('click', checkQuiz);
+
   // Stats panel
   const statsToggle = document.getElementById('stats-toggle');
   if (statsToggle) statsToggle.addEventListener('click', openStats);
@@ -1494,6 +1662,19 @@ function attachListeners() {
   });
 }
 
+function resetQuizState() {
+  quizChecked = false;
+  quizAnswer = '';
+}
+
+function checkQuiz() {
+  // Capture latest input value (in case event listener missed last keystroke)
+  const input = document.getElementById('quiz-input');
+  if (input) quizAnswer = input.value;
+  quizChecked = true;
+  render();
+}
+
 function mark(status) {
   const card = currentDeck[position];
   if (!card) return;
@@ -1502,6 +1683,7 @@ function mark(status) {
   saveStates();
   stopAudio();
   revealed = false;
+  resetQuizState();
   position = position + 1 < currentDeck.length ? position + 1 : 0;
   render();
   if (audioOn && !audioPaused) startAudioForCurrent();
@@ -1510,6 +1692,7 @@ function mark(status) {
 function goSkip() {
   stopAudio();
   revealed = false;
+  resetQuizState();
   position = position + 1 < currentDeck.length ? position + 1 : 0;
   render();
   if (audioOn && !audioPaused) startAudioForCurrent();
@@ -1518,6 +1701,7 @@ function goSkip() {
 function goBack() {
   stopAudio();
   revealed = false;
+  resetQuizState();
   position = position > 0 ? position - 1 : Math.max(currentDeck.length - 1, 0);
   render();
   if (audioOn && !audioPaused) startAudioForCurrent();
@@ -1730,7 +1914,22 @@ window.addEventListener('keydown', (e) => {
   if (document.getElementById('stats-panel')?.classList.contains('open')) return;
   if (document.getElementById('help-modal')?.classList.contains('open')) return;
 
+  // Don't intercept keystrokes while typing in an input/textarea
+  // (except Escape and Ctrl/Cmd+Enter, which were handled above / inline)
+  const tag = e.target?.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
   if (currentDeck.length === 0) return;
+
+  // Quiz mode: 1=GOT IT, 2=REVIEW LATER (only after check)
+  if (mode === 'quiz') {
+    if (e.key === '1' && quizChecked) mark('mastered');
+    else if (e.key === '2' && quizChecked) mark('drill');
+    else if (e.key === 'ArrowLeft') goBack();
+    else if (e.key === 'ArrowRight') goSkip();
+    return;
+  }
+
   if (e.key === ' ') {
     e.preventDefault();
     revealed = !revealed;
