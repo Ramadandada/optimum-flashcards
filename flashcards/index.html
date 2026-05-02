@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0F0E0C">
+<title>Optimum Sales Bible · Drill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #0F0E0C;
+    color: #F0EBE0;
+    font-family: 'Manrope', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+    min-height: 100vh;
+  }
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    background: transparent;
+    color: inherit;
+  }
+  button:focus-visible { outline: 1px solid #D4A24C; outline-offset: 2px; }
+
+  .root {
+    min-height: 100vh;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 20px 16px 140px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #2A2620;
+  }
+  .brand-top {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: #D4A24C;
+    line-height: 1;
+  }
+  .brand-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: #6B645A;
+    margin-top: 4px;
+  }
+  .stats-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 4px 0;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .pct-big {
+    font-size: 20px;
+    font-weight: 600;
+    color: #D4A24C;
+    letter-spacing: 0.05em;
+    font-family: 'Fraunces', serif;
+  }
+  .pct-label {
+    font-size: 9px;
+    color: #6B645A;
+    letter-spacing: 0.2em;
+    margin-top: 2px;
+  }
+
+  /* Chips */
+  .chips-wrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin: 0 -16px;
+    padding: 0 16px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .chips-wrap::-webkit-scrollbar { display: none; }
+  .chips {
+    display: flex;
+    gap: 6px;
+    padding-bottom: 4px;
+    min-width: min-content;
+  }
+  .chip {
+    padding: 8px 14px;
+    color: #9C9489;
+    border: 1px solid #2A2620;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .chip.active {
+    background: #D4A24C;
+    color: #0F0E0C;
+    border-color: #D4A24C;
+  }
+
+  /* Modes */
+  .modes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .mode-group {
+    display: flex;
+    background: #1A1814;
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid #2A2620;
+  }
+  .mode-btn {
+    padding: 6px 14px;
+    color: #6B645A;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    font-family: 'JetBrains Mono', monospace;
+    border-radius: 5px;
+    transition: all 0.15s;
+  }
+  .mode-btn.active {
+    background: #0F0E0C;
+    color: #F0EBE0;
+    box-shadow: 0 1px 0 0 rgba(255,255,255,0.04);
+  }
+  .shuffle-btn {
+    padding: 8px 14px;
+    background: #1A1814;
+    color: #6B645A;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    font-family: 'JetBrains Mono', monospace;
+    border-radius: 8px;
+    border: 1px solid #2A2620;
+  }
+  .shuffle-btn.active {
+    color: #D4A24C;
+    border-color: #3A3328;
+  }
+
+  /* Progress */
+  .progress-wrap { display: flex; flex-direction: column; gap: 6px; }
+  .progress-bar {
+    height: 2px;
+    background: #1A1814;
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #D4A24C, #E0BC6E);
+    transition: width 0.3s ease;
+  }
+  .progress-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    color: #9C9489;
+    letter-spacing: 0.05em;
+  }
+  .progress-dot { color: #3A3328; }
+
+  /* Card */
+  .main {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    min-height: 380px;
+  }
+  .card {
+    flex: 1;
+    background: #1A1814;
+    border: 1px solid #2A2620;
+    border-radius: 4px;
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    position: relative;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .card.fade-out { opacity: 0; transform: translateY(-12px); }
+  .card.fade-in { opacity: 1; transform: translateY(0); }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: #6B645A;
+    font-weight: 600;
+  }
+  .card-cat { color: #D4A24C; }
+  .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .card-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: #6B645A;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .card-question {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: #F0EBE0;
+    letter-spacing: -0.01em;
+  }
+  .card-answer {
+    font-family: 'Manrope', sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    color: #F0EBE0;
+    white-space: pre-line;
+    font-weight: 400;
+  }
+  .card-answer-script {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    line-height: 1.45;
+    color: #F0EBE0;
+    white-space: pre-line;
+    font-style: italic;
+    font-weight: 400;
+    padding-left: 14px;
+    border-left: 2px solid #D4A24C;
+  }
+  .tap-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #6B645A;
+    margin-top: 32px;
+    letter-spacing: 0.1em;
+  }
+  .kbd {
+    background: #0F0E0C;
+    border: 1px solid #2A2620;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #9C9489;
+    margin: 0 2px;
+  }
+  .kbd-light {
+    background: rgba(15, 14, 12, 0.4);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    margin-left: 8px;
+    letter-spacing: 0.1em;
+  }
+  .status-indicator {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 4px;
+    height: 40px;
+    border-radius: 0 4px 0 0;
+  }
+  .status-mastered { background: #6FCF97; }
+  .status-drill { background: #E0A93C; }
+
+  /* Empty */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px;
+    text-align: center;
+  }
+  .empty-headline {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    color: #9C9489;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+  .empty-hint {
+    font-size: 13px;
+    color: #6B645A;
+  }
+
+  /* Actions */
+  .actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, transparent, #0F0E0C 30%);
+    padding: 40px 16px 20px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    display: flex;
+    gap: 8px;
+    max-width: 720px;
+    margin: 0 auto;
+    z-index: 10;
+  }
+  .act-back, .act-skip {
+    flex: 0 0 auto;
+    padding: 14px 16px;
+    background: #1A1814;
+    color: #9C9489;
+    border: 1px solid #2A2620;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .act-reveal {
+    flex: 1;
+    padding: 14px 20px;
+    background: #D4A24C;
+    color: #0F0E0C;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .act-drill, .act-master, .act-skip-sm {
+    flex: 1;
+    padding: 14px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+  }
+  .act-drill {
+    color: #E0A93C;
+    border: 1px solid #5A4828;
+  }
+  .act-master {
+    background: #6FCF97;
+    color: #0F0E0C;
+    font-weight: 800;
+  }
+  .act-skip-sm {
+    color: #6B645A;
+    border: 1px solid #2A2620;
+  }
+  .act-num {
+    font-size: 8px;
+    opacity: 0.5;
+    letter-spacing: 0.1em;
+  }
+
+  /* Stats panel */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+
+  .stats-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(420px, 100vw);
+    background: #0F0E0C;
+    border-left: 1px solid #2A2620;
+    padding: 24px;
+    overflow-y: auto;
+    z-index: 51;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .stats-panel.open { transform: translateX(0); }
+  .stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .stats-title {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #D4A24C;
+  }
+  .stats-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: #6B645A;
+    margin-top: 4px;
+  }
+  .close-btn {
+    color: #9C9489;
+    font-size: 20px;
+    padding: 4px 12px;
+  }
+  .stats-big-pct {
+    background: #1A1814;
+    border: 1px solid #2A2620;
+    border-radius: 4px;
+    padding: 32px 20px;
+    text-align: center;
+  }
+  .stats-big-num {
+    font-family: 'Fraunces', serif;
+    font-size: 64px;
+    font-weight: 600;
+    color: #D4A24C;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .stats-pct-sym {
+    font-size: 32px;
+    color: #6B645A;
+  }
+  .stats-big-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #9C9489;
+    letter-spacing: 0.2em;
+    margin-top: 12px;
+  }
+  .cat-list { display: flex; flex-direction: column; gap: 14px; }
+  .cat-row { display: flex; flex-direction: column; gap: 6px; }
+  .cat-row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .cat-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #F0EBE0;
+    letter-spacing: 0.02em;
+  }
+  .cat-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #9C9489;
+  }
+  .cat-bar {
+    height: 3px;
+    background: #1A1814;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .cat-bar-fill {
+    height: 100%;
+    background: #D4A24C;
+    transition: width 0.4s ease;
+  }
+  .reset-btn {
+    margin-top: auto;
+    padding: 12px;
+    color: #6B645A;
+    border: 1px solid #2A2620;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Welcome modal */
+  .welcome {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 14, 12, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+  }
+  .welcome.hidden { opacity: 0; pointer-events: none; }
+  .welcome-card {
+    background: #1A1814;
+    border: 1px solid #2A2620;
+    border-radius: 8px;
+    padding: 36px 28px;
+    max-width: 480px;
+    width: 100%;
+  }
+  .welcome-brand {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: #D4A24C;
+    text-align: center;
+  }
+  .welcome-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: #6B645A;
+    text-align: center;
+    margin-top: 6px;
+    margin-bottom: 28px;
+  }
+  .welcome-title {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    color: #F0EBE0;
+    line-height: 1.3;
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+  .welcome-body {
+    font-size: 14px;
+    color: #B5AC9F;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .welcome-list {
+    list-style: none;
+    margin: 12px 0 24px;
+  }
+  .welcome-list li {
+    font-size: 13px;
+    color: #B5AC9F;
+    padding: 6px 0;
+    padding-left: 24px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .welcome-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #D4A24C;
+    font-weight: 700;
+  }
+  .welcome-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background: #D4A24C;
+    color: #0F0E0C;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ========== CARD DATA ==========
+const CARDS = [
+  // Cold Call
+  { id: 1, cat: 'Cold Call', q: 'The 7 steps of a cold call door visit', a: '1) Greeting\n2) Place yourself in area\n3) Ask the magic question\n4) Get card\n5) Gather info\n6) Get gatekeeper\'s name\n7) Get out', type: 'list' },
+  { id: 2, cat: 'Cold Call', q: 'The magic 11-word question at every door', a: '"Who can I contact about what you do for drinking water and ice for your employees?"', type: 'script' },
+  { id: 3, cat: 'Cold Call', q: 'Why "Who can I CONTACT" instead of "who handles this"?', a: '"Contact" is future tense — it disarms the gatekeeper because it signals you\'re leaving immediately. They\'re more likely to give you the card.', type: 'concept' },
+  { id: 4, cat: 'Cold Call', q: 'What do you bring with you when cold-calling a door?', a: 'A pen and a smile. Nothing else. No bag, no folder, no laptop.', type: 'concept' },
+  { id: 5, cat: 'Cold Call', q: 'The "place yourself in the area" opener', a: '"I have an appointment next door at ABC Company. I\'ve been by here a million times — I figured I\'d stop in since I had a few minutes."', type: 'script' },
+  { id: 6, cat: 'Cold Call', q: '5 info-gathering questions at the door (after getting the card)', a: '1) What do you do for drinking water?\n2) Do you get those 5-gallon jugs delivered?\n3) Any issues with the water?\n4) How many coolers do you have?\n5) Do you guys do anything for ice?', type: 'list' },
+  { id: 7, cat: 'Cold Call', q: 'How to exit the door cleanly', a: '"Awesome — what was your name? Thanks for your help. I\'ll give [decision-maker] a call. Have a great day."', type: 'script' },
+  { id: 8, cat: 'Cold Call', q: 'How do you classify cards after collecting them?', a: 'Rate 1–5. Call the 3s, 4s, 5s yourself. Pass the 1s and 2s to the telemarketer. Don\'t waste time on weak leads.', type: 'concept' },
+
+  // Phone
+  { id: 9, cat: 'Phone', q: 'The 4 steps of the appointment-setting phone call', a: '1) Greeting / Clear time\n2) Relevance\n3) Value proposition\n4) Assumptive close', type: 'list' },
+  { id: 10, cat: 'Phone', q: 'How long should the entire phone call take?', a: '30 seconds total. Get to the point in 15–20 seconds.', type: 'concept' },
+  { id: 11, cat: 'Phone', q: 'How to "clear the time" instead of asking permission', a: '"Glad I caught you. I\'ll be quick — only need a couple seconds."\n\nNEVER ask "is now a good time?" — it\'s a yes/no that invites a no.', type: 'script' },
+  { id: 12, cat: 'Phone', q: 'The relevance line (using info from the door visit)', a: '"I stopped by the other day, talked to Selina up front. She said you\'re the guy that handles water and ice. She also mentioned you use 5-gallon jugs and run out sometimes — is that right?"', type: 'script' },
+  { id: 13, cat: 'Phone', q: 'The value proposition line', a: '"We have systems that give you a never-ending supply of purified water — usually cost less than the jugs. Most sanitary on the market. We work with a bunch of your neighbors."', type: 'script' },
+  { id: 14, cat: 'Phone', q: 'The assumptive close line', a: '"I\'m going to be next door Tuesday and Thursday — I have appointments all around you. Does Tuesday at 2 work, or is Thursday better? I just want 10 minutes of your time."', type: 'script' },
+  { id: 15, cat: 'Phone', q: 'Objection — "We\'re all set."', a: '"You may be — but Sally said you don\'t actually drink it. Most of your neighbors said the same until they saw what we do. Have you ever had Smart Water? Our machines make Smart Water. 10 minutes — Tuesday or Thursday?"', type: 'script' },
+  { id: 16, cat: 'Phone', q: 'Objection — "We tried this before, didn\'t like it."', a: '"You haven\'t tried ours. Our systems are the most technologically advanced on the market. Have you ever had Smart Water? Our machines make Smart Water. Just 10 minutes — I guarantee it\'s worth your while."', type: 'script' },
+  { id: 17, cat: 'Phone', q: 'Objection — "Just send me some info."', a: '"If I send info, you\'ll have more questions than answers. That\'s why I do everything in person. 10 minutes is all I need — I\'m gonna be right next door anyway."', type: 'script' },
+
+  // 10-Step Pitch
+  { id: 18, cat: '10-Step Pitch', q: 'List all 10 steps of the sales pitch in order', a: '1) Greeting\n2) Build rapport\n3) Gather info\n4) Go to the cooler\n5) Destroy what they have\n6) Describe units top to bottom\n7) Purification\n8) Installation\n9) Service\n10) Close for demo', type: 'list' },
+  { id: 19, cat: '10-Step Pitch', q: 'Why are steps 1–3 (greeting, rapport, gather info) critical?', a: 'People buy from people. New reps skip these and lose deals. Build trust first — your goal is to make the customer your best friend in 2 minutes.', type: 'concept' },
+  { id: 20, cat: '10-Step Pitch', q: 'How to transition from rapport into gathering info', a: '"Mr. Customer, before I show you what we do, let me ask you a few questions. I don\'t want to waste your time on stuff you don\'t need."', type: 'script' },
+  { id: 21, cat: '10-Step Pitch', q: 'The Reverse Osmosis line — MEMORIZE EXACTLY', a: '"Are you familiar with reverse osmosis?\n\nKnown worldwide as the best way to purify drinking water."', type: 'script' },
+  { id: 22, cat: '10-Step Pitch', q: 'The Smart Water line — MEMORIZE EXACTLY', a: '"Have you ever had Smart Water? Our machines make Smart Water — that\'s electrolyte-enhanced, pH-balanced water. It\'s like having a bottled water plant right in your office."', type: 'script' },
+  { id: 23, cat: '10-Step Pitch', q: 'The boost filter blurb', a: '"We use a boost filter that adds calcium, magnesium, potassium, and sodium bicarbonate. Raises the pH and makes it more healthy and hydrating."', type: 'script' },
+  { id: 24, cat: '10-Step Pitch', q: 'The in-tank sanitation blurb', a: '"We sanitize in-tank with activated oxygen — also called ozonation. It bubbles through and hyper-oxygenates the water. Kills 100% of bacteria, mold, slime, viruses. Nothing organic can grow in our machines."', type: 'script' },
+  { id: 25, cat: '10-Step Pitch', q: 'The installation blurb', a: '"We hook up like a fridge ice maker. Lines look like cable wire — we run them up walls, over drop ceilings. Under the sink we put a brass T at the cold water shutoff. Takes my guy 20–30 minutes. 100% reversible."', type: 'script' },
+  { id: 26, cat: '10-Step Pitch', q: 'The full service blurb — MEMORIZE EXACTLY', a: '"We put you on a maintenance schedule that we manage for you. Once a year we change all your filters no matter what — rated for 1,500 gallons. That\'s a lot of water.\n\nThere\'s a microprocessor monitoring filter life and water quality. If anything\'s off in between, the machine tells you. You never drink or pay for imperfect water."', type: 'script' },
+  { id: 27, cat: '10-Step Pitch', q: 'The 5-day fix guarantee line', a: '"If we don\'t fix an issue within 5 days, you don\'t pay for your machine that month."', type: 'script' },
+  { id: 28, cat: '10-Step Pitch', q: 'The dog-bowl line (destroying jug coolers)', a: '"Do you have a dog at home? You fill the bowl, two days later it\'s slimy and nasty — that\'s organic compounds reacting with plastic. Same thing in your water cooler tank — except people drink out of yours."', type: 'script' },
+  { id: 29, cat: '10-Step Pitch', q: 'The workman\'s comp / 5-gallon jug line', a: '"60% of all workman\'s comp claims in an office environment come from these 5-gallon jugs. Average non-surgical back claim is around $100,000."', type: 'script' },
+  { id: 30, cat: '10-Step Pitch', q: 'The "open system" / glug-glug line', a: '"This is what we call an open system. Hear that glug-glug-glug? That\'s outside air being pulled into the tank through the opposite spigot. Whatever\'s in the air, on people\'s hands, on the bottle — gets pulled right into the water."', type: 'script' },
+  { id: 31, cat: '10-Step Pitch', q: 'The cleaning frequency line', a: '"The International Bottled Water Association says clean every 6 weeks or every other bottle change. Nobody ever does it."', type: 'script' },
+  { id: 32, cat: '10-Step Pitch', q: 'The cross-contamination / workplace epidemic line', a: '"People\'s hands all over the lever, sport bottles jammed against the spigot they\'ve been drinking from for days. Viruses live on plastic 3–5 days. This is how workplace epidemics happen."', type: 'script' },
+  { id: 33, cat: '10-Step Pitch', q: 'Destroying a filter cooler (carbon-only)', a: '"Carbon only removes gases — chlorine, sulfur. Same as your fridge or a Brita filter. Lead, mercury, arsenic, chromium 6 — all stay in your water. You\'re basically drinking the same as tap, except now it sat in a tank where bacteria could grow."', type: 'script' },
+  { id: 34, cat: '10-Step Pitch', q: 'The 3-step close for the demo', a: '1) Make them feel special — "Because you\'re a major / because we work with so many of your neighbors, we offer a free trial."\n2) "If you were to do a free trial, would this be the best spot — or somewhere else?"\n3) "Which machine would you like to try?"', type: 'list' },
+  { id: 35, cat: '10-Step Pitch', q: 'How to NOT close for the demo (yes/no trap)', a: 'NEVER ask "Do you want to do a free trial?" — that\'s a yes/no question that invites a no.\n\nAlways ask "WHICH machine would you like to try?" — assumes the trial is happening.', type: 'concept' },
+
+  // Closing
+  { id: 36, cat: 'Closing', q: 'The two-day follow-up opening line', a: '"Hey, I was right next door for another appointment. We put a machine in a couple days ago — figured I\'d pop in. How\'d my technician do? Did he keep it clean in here?"', type: 'script' },
+  { id: 37, cat: 'Closing', q: 'The MAGIC transition line — from chitchat to the close', a: '"Sounds like you\'re gonna keep it. As the next step, I just need to grab a signature to set up your account."', type: 'script' },
+  { id: 38, cat: 'Closing', q: '"Follow the Pen" — the 5-point sequence on Page 2', a: '1) Customer info → "Here\'s your info."\n2) Price → "$115 a month."\n3) Billing frequency → "We\'ll bill you monthly."\n4) Term → "We guarantee your price for 60 months."\n5) Install fee → "One-time $275 install fee. Sign there. Flip when done."', type: 'list' },
+  { id: 39, cat: 'Closing', q: 'WHY sandwich the term between price and install fee?', a: 'If they push back, it\'ll be on the install fee (the LAST thing you said) — way easier to handle than fighting term.\n\nThe sandwich hides the 60-month commitment between two friendlier numbers.', type: 'concept' },
+  { id: 40, cat: 'Closing', q: 'How to respond to "60 months is too long"', a: '"60 months is our standard term."\n\nThen SHUT UP. Let them talk to themselves.\n\nOnly if they keep pushing: "These machines are extremely expensive — we typically don\'t break even until 30–36 months. That\'s why."', type: 'script' },
+  { id: 41, cat: 'Closing', q: 'The 4 negotiation levers in priority order', a: '1) Waive install fee (costs you $75)\n2) Offer free month rebate ($0 cost to you — only on 36+ mo, credit-approved)\n3) Drop term to 36 months (costs 2x multiplier — last resort)\n4) Drop price (costs you bonus eligibility)', type: 'list' },
+  { id: 42, cat: 'Closing', q: 'The referral ask AFTER they sign', a: '"By the way — we have a $50 referral bonus per machine. Any other locations? Family members with businesses? Anyone you think I should give a call to?"', type: 'script' },
+  { id: 43, cat: 'Closing', q: 'The Customer Satisfaction Guarantee summary (Page 1)', a: '"Sign there, I\'ll tell you what it says: Everything\'s included — filters, maintenance, service, parts. If we don\'t fix an issue in 5 days, you don\'t pay for your machine that month. Pretty cool, huh? Flip when done."', type: 'script' },
+  { id: 44, cat: 'Closing', q: 'The Page 3 sneaky trick (multi-unit deals)', a: 'When they\'re sign-and-flipping mindlessly, say:\n\n"This is delivery and acceptance — just a permission slip for me to install the rest of your machines. Sign there."\n\n(Saves you a second trip. Harmless because we can\'t fund until everything\'s installed anyway.)', type: 'script' },
+  { id: 45, cat: 'Closing', q: 'Which line on Terms & Conditions can NEVER be struck?', a: 'Line 8 — Early Termination.\n\nIf they strike this, the contract becomes month-to-month and the deal economics break. You\'ll be charged 2x commission AND 2x bonus back. They could fire you.', type: 'concept' },
+  { id: 46, cat: 'Closing', q: 'Which Terms line CAN they strike?', a: 'Line 9 — Auto-renewal.\n\nThey can opt out of the 12-month auto-renew. We don\'t care — it just goes month-to-month after the term ends.', type: 'concept' },
+
+  // Comp Plan
+  { id: 47, cat: 'Comp Plan', q: 'Term multipliers — memorize all 5', a: '60 months = 5x\n48 months = 4x\n36 months = 3x\n24 months = 2x\n12 mo / month-to-month / credit declined = 1x', type: 'list' },
+  { id: 48, cat: 'Comp Plan', q: 'Average commission per unit (the math)', a: '~$140/mo (avg price) × 4x (avg term multiplier) = ~$560 per unit\n\nQuota of 12 units × $560 = ~$6,720/mo in base commission', type: 'concept' },
+  { id: 49, cat: 'Comp Plan', q: 'The 3 quarterly bonus tiers', a: 'Tier 1: $4,250 monthly RMR → $8,500/qtr bonus floor\nTier 2: $5,701 monthly RMR → $17,000/qtr bonus floor\nTier 3: $7,000 monthly RMR → $28,000/qtr bonus floor\n\nThis is ON TOP of regular commission.', type: 'list' },
+  { id: 50, cat: 'Comp Plan', q: 'Prime Minister\'s Club', a: '250 units sold in a calendar year = $7,000 cash bonus.', type: 'concept' },
+  { id: 51, cat: 'Comp Plan', q: 'His Majesty\'s Circle', a: '150+ units sold in a year = all-expenses-paid trip for two with the company. (US version: Ambassador\'s Club.)', type: 'concept' },
+  { id: 52, cat: 'Comp Plan', q: 'Install fee commission tiers', a: 'Charge $275 = $100 to you (CA — system shows $75, that\'s a glitch)\nCharge $225 = $80 to you\nCharge $175 = $0 (break even)\nBelow $150 = -$75 (you PAY)\n\nAlways charge full $275 when you can.', type: 'list' },
+  { id: 53, cat: 'Comp Plan', q: 'Daily quota math', a: '20 doors/day → 100/week\n2-3% become free trials → 8-12 trials/month\n~1.5 units per deal × 8 deals = 12 units = quota\nSet 1-2 appointments/day → 32/qtr (matches the quarterly minimum)', type: 'list' },
+  { id: 54, cat: 'Comp Plan', q: 'Renewals and Upgrades commission', a: 'Renewals: 50% commission, NO bonus\nUpgrades: 50% of price difference, NO bonus, NO quota credit\n\n(Upgrades cost the company so much you may not even be allowed to do them.)', type: 'concept' },
+
+  // Products
+  { id: 55, cat: 'Products', q: 'PW-50 specs', a: '$85/mo CAD\n1.8 gal cold ready\nHot + cold (NO room temp, NO ice)\nNOT touch-free\nDrip drain only\nGood for: 15-20 employees', type: 'list' },
+  { id: 56, cat: 'Products', q: 'PW-70 specs', a: '$105/mo CAD\n2.3 gal cold ready\nHot + cold\nTouch-free ✓\nActive drain available (+$15)\nGood for: 20-30 employees', type: 'list' },
+  { id: 57, cat: 'Products', q: 'PW-90 specs (the bread and butter)', a: '$115/mo CAD\n3 gal cold ready\nHot + cold\nTouch-free ✓\nActive drain available (+$15)\nGood for: 30-40 employees\n\nThis is your default water-only pitch.', type: 'list' },
+  { id: 58, cat: 'Products', q: 'PW-90 Countertop specs', a: '$95/mo CAD\nOnly 1 gal cold (small tank)\nHot + cold\nTouch-free ✓\nNO active drain available\nGood for: 15-20 employees\n\nUse only when there\'s no floor space.', type: 'list' },
+  { id: 59, cat: 'Products', q: 'I-14 specs (the moneymaker)', a: '$199/mo CAD\nIce + hot + cold + room temp\n13 lb ice ready / 45 lb/day (bullet ice)\nTouch-free ✓\nALWAYS comes with active drain\n5+ gallons of water at the ready\nGood for: 40-50 employees', type: 'list' },
+  { id: 60, cat: 'Products', q: 'Which 2 machines do you ALWAYS pitch?', a: 'I-14 first (ice + water) — even if they say no ice initially.\nThen the PW-90 (water only).\n\nDon\'t list every machine. Just these two.', type: 'concept' },
+  { id: 61, cat: 'Products', q: 'What does the "+" mean on a model number (PW90R+)?', a: 'With boost filter (the one that adds electrolytes and raises pH).\n\nALWAYS order the + version. Without it, customer doesn\'t get Smart Water.', type: 'concept' },
+  { id: 62, cat: 'Products', q: 'Cold and hot water temperatures', a: 'Cold: 3°C (~38°F)\nHot: 85°C (~185°F)\n\nGreat for tea, oatmeal, soup, ramen.', type: 'concept' },
+  { id: 63, cat: 'Products', q: 'How many gallons per day does each RO membrane make?', a: '80 GPD per membrane.\n\nXL1 has TWO membranes side-by-side = 160 GPD (working in parallel, not in series).', type: 'concept' },
+  { id: 64, cat: 'Products', q: 'Filter ratings', a: 'Sediment / GAC / Carbon Block: 1,500 gallons\nRO membrane: 3,000 gallons\nBoost filter: 1,500 gallons\n\nWe come once a year and change them all anyway.', type: 'concept' },
+  { id: 65, cat: 'Products', q: 'The complete filtration stack (in order)', a: '1) Sediment filter (10 microns)\n2) GAC carbon filter (5 microns)\n3) Carbon block (1 micron)\n4) RO membrane (0.0001 micron)\n5) Boost filter (adds electrolytes, raises pH)', type: 'list' },
+  { id: 66, cat: 'Products', q: 'XL1 — when to pitch it', a: 'High-volume locations: gyms, big offices, busy cafeterias, schools.\n\nHas TWO RO membranes (160 GPD), 5 gal cold, 2.5 gal ambient, 1.1 gal hot. LED UV sanitation. Touch-free.', type: 'concept' },
+  { id: 67, cat: 'Products', q: 'What\'s special about the S4 (sparkling)?', a: 'NO reverse osmosis — sparkling needs TDS in the water for CO2 to bond. So just sediment + carbon + carbon block (no RO, no boost filter).', type: 'concept' },
+
+  // Water Science
+  { id: 68, cat: 'Water Science', q: 'What does TDS stand for?', a: 'Total Dissolved Solids.\n\nMeasures everything dissolved in water — heavy metals, chemicals, minerals — except gases.', type: 'concept' },
+  { id: 69, cat: 'Water Science', q: 'TDS chart — memorize the buckets', a: '<20 PPM = pure / RO water\n<50 PPM = high-quality bottled\n80-450 PPM = municipal tap\n170+ PPM = hard water\n300+ PPM = high TDS, don\'t drink\n500 PPM = max contaminant level', type: 'list' },
+  { id: 70, cat: 'Water Science', q: 'Filtration vs Purification', a: 'FILTRATION (carbon, microfiltration): removes gases like chlorine and sulfur, some particles. Down to ~1 micron.\n\nPURIFICATION (reverse osmosis): strips EVERYTHING down to 0.0001 micron — 1000x better.', type: 'concept' },
+  { id: 71, cat: 'Water Science', q: 'IOCs vs VOCs', a: 'IOCs = Inorganic (non-living): lead, mercury, arsenic, chromium 6, fluoride, nitrate. RO removes these.\n\nVOCs = Organic (chemical): solvents, herbicides, pesticides. CARBON removes these.', type: 'concept' },
+  { id: 72, cat: 'Water Science', q: 'PFAs — what are they?', a: '"Forever chemicals." Never leave your body. Linked to chronic illness and cancer.\n\nDow Chemical lost a multi-billion dollar lawsuit over PFAs in water.', type: 'concept' },
+  { id: 73, cat: 'Water Science', q: 'Why does pure water need a boost filter?', a: 'After RO, water is acidic (~5.5-6 pH). An acidic body is more disease-susceptible.\n\nBoost filter adds calcium/magnesium/potassium/sodium bicarbonate → raises pH → alkaline = healthy.', type: 'concept' },
+  { id: 74, cat: 'Water Science', q: 'How does activated oxygen (O3) work?', a: 'Air passes over an electrically charged corona wire — O2 becomes O3. The extra oxygen atom hyper-oxygenates the water.\n\nKills 100% of bacteria, mold, slime, viruses. Nothing organic can grow in oxygenated water. Doesn\'t lose effectiveness.', type: 'concept' },
+  { id: 75, cat: 'Water Science', q: 'Why are TRADITIONAL UV bulbs actually BAD?', a: 'They get covered in algae and dim over time. They become a HEAT SOURCE for bacteria — opposite effect.\n\nLED UV is fine (8-year life, no dimming). Traditional bulbs are competitor weakness.', type: 'concept' },
+  { id: 76, cat: 'Water Science', q: 'The 4 dissolved solids to name to a customer', a: 'Lead, mercury, arsenic, chromium 6.\n\nMemorize these — they roll off the tongue and instantly disgust the customer.', type: 'list' },
+
+  // Process
+  { id: 77, cat: 'Process', q: 'The 15-step complete sales process', a: '1) Hit door, get card\n2) Phone to set appointment\n3) Create Company in Water Desk\n4) Add Contact\n5) Create Meeting\n6) Run pitch, get free trial\n7) Create Opportunity\n8) Create Work Order (with 3 photos)\n9) Email scheduling@\n10) Email customer install date\n11) Install happens\n12) Two-day follow-up in person\n13) Set PCM if needed\n14) Close, scan to admin@\n15) Mark Closed Won', type: 'list' },
+  { id: 78, cat: 'Process', q: 'The 3 photos to take at every free trial', a: '1) Where the cooler will go (close-up of placement spot)\n2) Under the sink (cold water shutoff)\n3) Wide shot showing the path between sink and cooler', type: 'list' },
+  { id: 79, cat: 'Process', q: 'Email to scheduling — exact format', a: 'TO: scheduling@drinkoptimum.com\nCC: your manager\nSUBJECT: Install Date Request\nBODY: [Company Name] + [URL to the work order]\n\n+ any special timing requests from customer', type: 'list' },
+  { id: 80, cat: 'Process', q: 'Email to admin — exact format', a: 'TO: admin@drinkoptimum.com\nSUBJECT: [Company Name] Agreement\nBODY: brief note + scanned PDF of agreement attached\n\nUse TurboScan or Notes to scan from your phone.', type: 'list' },
+  { id: 81, cat: 'Process', q: 'Water Desk — top tabs vs bottom tabs rule', a: 'TOP TABS = main pages for the whole company database. DON\'T use these mid-flow.\n\nBOTTOM TABS (inside an account) = add things to that account. ALWAYS use these.', type: 'concept' },
+  { id: 82, cat: 'Process', q: 'Water Desk new account — order of creation', a: '1) Companies → New Company (status: Prospect)\n2) Inside account → Contacts → New\n3) Inside account → Meetings → New (type: Self-Generated Appointment)\n\nEACH ONE BUILDS ON THE LAST. Order matters.', type: 'list' },
+  { id: 83, cat: 'Process', q: 'After getting a free trial — what 2 things do you create?', a: '1) Opportunity (always check "credit requested")\n2) Work Order (link to the opportunity, attach 3 photos)\n\nThen copy work order URL → email scheduling.', type: 'list' },
+  { id: 84, cat: 'Process', q: 'Water Desk search trick', a: 'Use ASTERISK for partial match.\n\nExample: "52 D*" finds all addresses starting with "52 D" — useful when you don\'t know the exact street name.', type: 'concept' },
+  { id: 85, cat: 'Process', q: 'Daily CADS log', a: 'Cards (collected) + Appointments (set) + Demos (got) + Sales (made)\n\nLog every day. CADS counts deals, not units — 3 free trials at one company = 1 demo.', type: 'concept' },
+  { id: 86, cat: 'Process', q: 'When do you do the two-day follow-up?', a: 'In person, UNANNOUNCED, exactly 2 days after the install.\n\nNot phone. The face-to-face triples your close rate.', type: 'concept' },
+
+  // Mindset
+  { id: 87, cat: 'Mindset', q: 'Why never pitch at the door?', a: '75% lower close rate.\n\nIf the customer doesn\'t INVITE you in, they psychologically resist buying. Set the appointment, get invited, pitch then.', type: 'concept' },
+  { id: 88, cat: 'Mindset', q: 'The volume mantra', a: '"Volume of accounts fixes all woes."\n\nIf you only have 2 deals working and lose one, you\'re cooked. Always be hitting doors. 20/day, no excuses.', type: 'concept' },
+  { id: 89, cat: 'Mindset', q: 'Always set the next step on...', a: 'YOUR schedule, not theirs.\n\n"I\'ll be in your area Tuesday at 2." — NOT — "Call me when you\'re ready."\n\nCustomers will drag deals out forever if you let them.', type: 'concept' },
+  { id: 90, cat: 'Mindset', q: 'How to handle "we want to think about it"', a: '"Totally — that\'s why we offer free trials. No paperwork, no obligation. Worst case, you get amazing water for two weeks free. Which machine would you like to try?"\n\nReframe thinking-time as trial-time.', type: 'script' },
+];
+
+const CATEGORIES = ['All', 'Cold Call', 'Phone', '10-Step Pitch', 'Closing', 'Comp Plan', 'Products', 'Water Science', 'Process', 'Mindset'];
+const STORAGE_KEY = 'optimum-card-states';
+const WELCOME_KEY = 'optimum-welcome-seen';
+
+// ========== STATE ==========
+let states = {};
+let activeCat = 'All';
+let mode = 'all';
+let shuffled = false;
+let position = 0;
+let revealed = false;
+let currentDeck = [];
+
+// Load from localStorage
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) states = JSON.parse(saved);
+} catch (e) {}
+
+function saveStates() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(states)); } catch (e) {}
+}
+
+// ========== HELPERS ==========
+function getDeck() {
+  let pool = activeCat === 'All' ? CARDS : CARDS.filter(c => c.cat === activeCat);
+  if (mode === 'drill') pool = pool.filter(c => states[c.id] === 'drill');
+  if (mode === 'new') pool = pool.filter(c => !states[c.id]);
+  if (shuffled) {
+    const arr = [...pool];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+  return pool;
+}
+
+function getStats() {
+  const pool = activeCat === 'All' ? CARDS : CARDS.filter(c => c.cat === activeCat);
+  const mastered = pool.filter(c => states[c.id] === 'mastered').length;
+  const drill = pool.filter(c => states[c.id] === 'drill').length;
+  const fresh = pool.filter(c => !states[c.id]).length;
+  return { total: pool.length, mastered, drill, fresh };
+}
+
+function getOverall() {
+  const mastered = CARDS.filter(c => states[c.id] === 'mastered').length;
+  return { mastered, total: CARDS.length, pct: Math.round((mastered / CARDS.length) * 100) };
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// ========== RENDER ==========
+function render() {
+  currentDeck = getDeck();
+  if (position >= currentDeck.length) position = 0;
+
+  const stats = getStats();
+  const overall = getOverall();
+  const card = currentDeck[position];
+
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="root">
+      <header class="header">
+        <div>
+          <div class="brand-top">OPTIMUM</div>
+          <div class="brand-sub">SALES BIBLE · DRILL</div>
+        </div>
+        <button class="stats-btn" id="stats-toggle">
+          <span class="pct-big">${overall.pct}%</span>
+          <span class="pct-label">${overall.mastered}/${overall.total}</span>
+        </button>
+      </header>
+
+      <div class="chips-wrap">
+        <div class="chips">
+          ${CATEGORIES.map(c => `
+            <button class="chip ${activeCat === c ? 'active' : ''}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="modes">
+        <div class="mode-group">
+          <button class="mode-btn ${mode === 'all' ? 'active' : ''}" data-mode="all">ALL</button>
+          <button class="mode-btn ${mode === 'drill' ? 'active' : ''}" data-mode="drill">DRILL</button>
+          <button class="mode-btn ${mode === 'new' ? 'active' : ''}" data-mode="new">NEW</button>
+        </div>
+        <button class="shuffle-btn ${shuffled ? 'active' : ''}" id="shuffle-toggle">
+          ↯ ${shuffled ? 'SHUFFLED' : 'IN ORDER'}
+        </button>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${stats.total ? ((position + 1) / stats.total) * 100 : 0}%"></div>
+        </div>
+        <div class="progress-meta">
+          <span>${currentDeck.length ? position + 1 : 0} / ${currentDeck.length}</span>
+          <span class="progress-dot">·</span>
+          <span style="color: #6FCF97">${stats.mastered} mastered</span>
+          <span class="progress-dot">·</span>
+          <span style="color: #E0A93C">${stats.drill} drill</span>
+          <span class="progress-dot">·</span>
+          <span style="color: #9C9489">${stats.fresh} new</span>
+        </div>
+      </div>
+
+      <main class="main">
+        ${currentDeck.length === 0 ? `
+          <div class="empty-state">
+            <div class="empty-headline">No cards in this view.</div>
+            <div class="empty-hint">
+              ${mode === 'drill' ? 'Nothing flagged for drilling yet. Switch to ALL or NEW.' :
+                mode === 'new' ? 'Everything in this category has been touched. Switch to ALL.' :
+                'Try a different category.'}
+            </div>
+          </div>
+        ` : `
+          <div class="card fade-in" id="card">
+            <div class="card-header">
+              <span class="card-cat">${escapeHtml(card.cat)}</span>
+              <span>#${String(card.id).padStart(2, '0')}</span>
+            </div>
+            <div class="card-body">
+              ${!revealed ? `
+                <div class="card-label">PROMPT</div>
+                <div class="card-question">${escapeHtml(card.q)}</div>
+                <div class="tap-hint">tap to reveal · or press <span class="kbd">space</span></div>
+              ` : `
+                <div class="card-label">${card.type === 'script' ? 'SAY THIS' : card.type === 'list' ? 'KNOW THIS' : 'ANSWER'}</div>
+                <div class="${card.type === 'script' ? 'card-answer-script' : 'card-answer'}">${escapeHtml(card.a)}</div>
+              `}
+            </div>
+            ${states[card.id] ? `<div class="status-indicator ${states[card.id] === 'mastered' ? 'status-mastered' : 'status-drill'}"></div>` : ''}
+          </div>
+        `}
+      </main>
+
+      ${currentDeck.length > 0 ? `
+        <div class="actions">
+          ${!revealed ? `
+            <button class="act-back" id="act-back">← BACK</button>
+            <button class="act-reveal" id="act-reveal">REVEAL <span class="kbd-light">SPACE</span></button>
+            <button class="act-skip" id="act-skip">SKIP →</button>
+          ` : `
+            <button class="act-drill" data-action="drill">
+              <span class="act-num">2</span>
+              <span>NEED DRILL</span>
+            </button>
+            <button class="act-master" data-action="mastered">
+              <span class="act-num">1</span>
+              <span>GOT IT</span>
+            </button>
+            <button class="act-skip-sm" data-action="skip">
+              <span class="act-num">3</span>
+              <span>SKIP</span>
+            </button>
+          `}
+        </div>
+      ` : ''}
+
+      <div class="overlay" id="overlay"></div>
+      <aside class="stats-panel" id="stats-panel">
+        <div class="stats-header">
+          <div>
+            <div class="stats-title">YOUR PROGRESS</div>
+            <div class="stats-subtitle">by category</div>
+          </div>
+          <button class="close-btn" id="close-stats">✕</button>
+        </div>
+        <div class="stats-big-pct">
+          <div class="stats-big-num">${overall.pct}<span class="stats-pct-sym">%</span></div>
+          <div class="stats-big-label">OVERALL · ${overall.mastered} of ${overall.total} cards</div>
+        </div>
+        <div class="cat-list">
+          ${CATEGORIES.filter(c => c !== 'All').map(cat => {
+            const pool = CARDS.filter(c => c.cat === cat);
+            const m = pool.filter(c => states[c.id] === 'mastered').length;
+            const pct = Math.round((m / pool.length) * 100);
+            return `
+              <div class="cat-row">
+                <div class="cat-row-top">
+                  <span class="cat-name">${escapeHtml(cat)}</span>
+                  <span class="cat-count">${m}/${pool.length}</span>
+                </div>
+                <div class="cat-bar">
+                  <div class="cat-bar-fill" style="width: ${pct}%"></div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <button class="reset-btn" id="reset-btn">RESET ALL PROGRESS</button>
+      </aside>
+    </div>
+  `;
+
+  attachListeners();
+}
+
+function attachListeners() {
+  // Category chips
+  document.querySelectorAll('.chip').forEach(el => {
+    el.addEventListener('click', () => {
+      activeCat = el.dataset.cat;
+      position = 0;
+      revealed = false;
+      render();
+    });
+  });
+
+  // Mode buttons
+  document.querySelectorAll('.mode-btn').forEach(el => {
+    el.addEventListener('click', () => {
+      mode = el.dataset.mode;
+      position = 0;
+      revealed = false;
+      render();
+    });
+  });
+
+  // Shuffle
+  const shuffleBtn = document.getElementById('shuffle-toggle');
+  if (shuffleBtn) shuffleBtn.addEventListener('click', () => {
+    shuffled = !shuffled;
+    position = 0;
+    revealed = false;
+    render();
+  });
+
+  // Card tap to reveal
+  const cardEl = document.getElementById('card');
+  if (cardEl) cardEl.addEventListener('click', () => {
+    if (!revealed) {
+      revealed = true;
+      render();
+    }
+  });
+
+  // Reveal button
+  const reveal = document.getElementById('act-reveal');
+  if (reveal) reveal.addEventListener('click', (e) => {
+    e.stopPropagation();
+    revealed = true;
+    render();
+  });
+
+  // Back / skip
+  const back = document.getElementById('act-back');
+  if (back) back.addEventListener('click', goBack);
+  const skip = document.getElementById('act-skip');
+  if (skip) skip.addEventListener('click', goSkip);
+
+  // Action buttons (mastered/drill/skip)
+  document.querySelectorAll('[data-action]').forEach(el => {
+    el.addEventListener('click', () => {
+      const action = el.dataset.action;
+      if (action === 'skip') goSkip();
+      else mark(action);
+    });
+  });
+
+  // Stats panel
+  const statsToggle = document.getElementById('stats-toggle');
+  if (statsToggle) statsToggle.addEventListener('click', openStats);
+  const closeStats = document.getElementById('close-stats');
+  if (closeStats) closeStats.addEventListener('click', closeStatsPanel);
+  const overlay = document.getElementById('overlay');
+  if (overlay) overlay.addEventListener('click', closeStatsPanel);
+  const reset = document.getElementById('reset-btn');
+  if (reset) reset.addEventListener('click', () => {
+    if (confirm('Reset all progress? This cannot be undone.')) {
+      states = {};
+      saveStates();
+      closeStatsPanel();
+      render();
+    }
+  });
+}
+
+function mark(status) {
+  const card = currentDeck[position];
+  if (!card) return;
+  if (status === null) delete states[card.id];
+  else states[card.id] = status;
+  saveStates();
+  revealed = false;
+  position = position + 1 < currentDeck.length ? position + 1 : 0;
+  render();
+}
+
+function goSkip() {
+  revealed = false;
+  position = position + 1 < currentDeck.length ? position + 1 : 0;
+  render();
+}
+
+function goBack() {
+  revealed = false;
+  position = position > 0 ? position - 1 : Math.max(currentDeck.length - 1, 0);
+  render();
+}
+
+function openStats() {
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('stats-panel').classList.add('open');
+}
+
+function closeStatsPanel() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('stats-panel').classList.remove('open');
+}
+
+// Keyboard shortcuts
+window.addEventListener('keydown', (e) => {
+  if (document.getElementById('welcome') && !document.getElementById('welcome').classList.contains('hidden')) return;
+  if (currentDeck.length === 0) return;
+  if (e.key === ' ') {
+    e.preventDefault();
+    revealed = !revealed;
+    render();
+  } else if (e.key === '1' && revealed) mark('mastered');
+  else if (e.key === '2' && revealed) mark('drill');
+  else if (e.key === '3' && revealed) goSkip();
+  else if (e.key === 'ArrowLeft') goBack();
+  else if (e.key === 'ArrowRight') goSkip();
+});
+
+// ========== WELCOME MODAL ==========
+function showWelcome() {
+  const seen = localStorage.getItem(WELCOME_KEY);
+  if (seen) return;
+
+  const welcome = document.createElement('div');
+  welcome.id = 'welcome';
+  welcome.className = 'welcome';
+  welcome.innerHTML = `
+    <div class="welcome-card">
+      <div class="welcome-brand">OPTIMUM</div>
+      <div class="welcome-sub">SALES BIBLE · DRILL</div>
+      <div class="welcome-title">90 cards. Every script worth memorizing.</div>
+      <div class="welcome-body">Drill the lines that close deals. Tap to reveal answers, mark what you know, drill what you don't.</div>
+      <ul class="welcome-list">
+        <li>Filter by category to focus your study session</li>
+        <li>"Drill" mode shows only cards you flagged for review</li>
+        <li>Progress saves automatically in your browser</li>
+        <li>Keyboard: <strong>Space</strong> reveals · <strong>1</strong> got it · <strong>2</strong> drill · <strong>3</strong> skip</li>
+      </ul>
+      <button class="welcome-btn" id="welcome-start">START DRILLING</button>
+    </div>
+  `;
+  document.body.appendChild(welcome);
+  document.getElementById('welcome-start').addEventListener('click', () => {
+    welcome.classList.add('hidden');
+    localStorage.setItem(WELCOME_KEY, '1');
+    setTimeout(() => welcome.remove(), 300);
+  });
+}
+
+// ========== INIT ==========
+render();
+showWelcome();
+</script>
+</body>
+</html>

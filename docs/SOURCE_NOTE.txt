@@ -1,0 +1,16 @@
+SOURCE TRANSCRIPT
+=================
+
+The original training transcript was provided inline in the Claude.ai chat
+conversation, not as an uploaded file. It's roughly 28,000 words of dialogue
+recorded during a real Optimum Water Solutions training ride-along in Toronto.
+
+If you want to drop the full transcript into this folder for Claude Code to
+reference, paste it from the original conversation into a file here named:
+
+    source-transcript.txt
+
+This is OPTIONAL. The playbook.md file in this directory already has all the
+extracted insights organized for use. The transcript is only useful as a
+canonical source if you want to verify a specific quote or extract something
+new that wasn't captured in the playbook.
