@@ -124,6 +124,13 @@
     justify-content: space-between;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
+  }
+  .modes-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
   }
   .mode-group {
     display: flex;
@@ -161,6 +168,117 @@
   .shuffle-btn.active {
     color: #C8932F;
     border-color: #D4C8B5;
+  }
+
+  /* Filter button (compact pill) */
+  .filter-btn {
+    padding: 8px 12px;
+    background: #FBF8F1;
+    color: #1A2540;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    font-family: 'JetBrains Mono', monospace;
+    border-radius: 8px;
+    border: 1px solid #E4DDD0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .filter-btn:hover { border-color: #D4C8B5; }
+  .filter-btn .filter-cat {
+    color: #C8932F;
+    max-width: 14ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .filter-btn .filter-chev {
+    color: #8A8175;
+    font-size: 8px;
+    transform: translateY(-1px);
+  }
+
+  /* Filter sheet (slides up from bottom) */
+  .filter-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #FBF8F1;
+    border-top: 1px solid #E4DDD0;
+    border-radius: 16px 16px 0 0;
+    padding: 22px 20px 28px;
+    padding-bottom: max(28px, env(safe-area-inset-bottom));
+    max-height: 76vh;
+    overflow-y: auto;
+    z-index: 51;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    box-shadow: 0 -8px 32px rgba(26,37,64,0.10);
+  }
+  .filter-sheet.open { transform: translateY(0); }
+  .filter-sheet-handle {
+    width: 36px;
+    height: 4px;
+    background: #D4C8B5;
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
+  .filter-sheet-title {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #1A2540;
+    margin-bottom: 4px;
+  }
+  .filter-sheet-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: #8A8175;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+  .filter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .filter-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 14px 14px;
+    background: transparent;
+    color: #1A2540;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    text-align: left;
+    transition: background 0.15s, border-color 0.15s;
+    min-height: 48px;
+  }
+  .filter-item:hover { background: rgba(228, 221, 208, 0.4); }
+  .filter-item.active {
+    background: rgba(200, 147, 47, 0.10);
+    border-color: #C8932F;
+    color: #1A2540;
+    font-weight: 600;
+  }
+  .filter-item-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #8A8175;
+    letter-spacing: 0.05em;
+  }
+  .filter-item.active .filter-item-count {
+    color: #C8932F;
   }
 
   /* Progress */
@@ -807,19 +925,18 @@ function render() {
         </button>
       </header>
 
-      <div class="chips-wrap">
-        <div class="chips">
-          ${CATEGORIES.map(c => `
-            <button class="chip ${activeCat === c ? 'active' : ''}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>
-          `).join('')}
-        </div>
-      </div>
-
       <div class="modes">
-        <div class="mode-group">
-          <button class="mode-btn ${mode === 'all' ? 'active' : ''}" data-mode="all">ALL</button>
-          <button class="mode-btn ${mode === 'drill' ? 'active' : ''}" data-mode="drill">DRILL</button>
-          <button class="mode-btn ${mode === 'new' ? 'active' : ''}" data-mode="new">NEW</button>
+        <div class="modes-left">
+          <div class="mode-group">
+            <button class="mode-btn ${mode === 'all' ? 'active' : ''}" data-mode="all">ALL</button>
+            <button class="mode-btn ${mode === 'drill' ? 'active' : ''}" data-mode="drill">DRILL</button>
+            <button class="mode-btn ${mode === 'new' ? 'active' : ''}" data-mode="new">NEW</button>
+          </div>
+          <button class="filter-btn" id="filter-toggle" aria-haspopup="true">
+            <span class="filter-chev">▦</span>
+            <span class="filter-cat">${escapeHtml(activeCat.toUpperCase())}</span>
+            <span class="filter-chev">▾</span>
+          </button>
         </div>
         <button class="shuffle-btn ${shuffled ? 'active' : ''}" id="shuffle-toggle">
           ↯ ${shuffled ? 'SHUFFLED' : 'IN ORDER'}
@@ -896,6 +1013,24 @@ function render() {
       ` : ''}
 
       <div class="overlay" id="overlay"></div>
+
+      <aside class="filter-sheet" id="filter-sheet" role="dialog" aria-label="Category filter">
+        <div class="filter-sheet-handle"></div>
+        <div class="filter-sheet-title">Categories</div>
+        <div class="filter-sheet-sub">Pick what to study</div>
+        <div class="filter-list">
+          ${CATEGORIES.map(c => {
+            const count = c === 'All' ? CARDS.length : CARDS.filter(card => card.cat === c).length;
+            return `
+              <button class="filter-item ${activeCat === c ? 'active' : ''}" data-cat="${escapeHtml(c)}">
+                <span>${escapeHtml(c)}</span>
+                <span class="filter-item-count">${count}</span>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </aside>
+
       <aside class="stats-panel" id="stats-panel">
         <div class="stats-header">
           <div>
@@ -935,12 +1070,17 @@ function render() {
 }
 
 function attachListeners() {
-  // Category chips
-  document.querySelectorAll('.chip').forEach(el => {
+  // Filter button (opens bottom sheet)
+  const filterToggle = document.getElementById('filter-toggle');
+  if (filterToggle) filterToggle.addEventListener('click', openFilter);
+
+  // Category items inside the filter sheet
+  document.querySelectorAll('.filter-item').forEach(el => {
     el.addEventListener('click', () => {
       activeCat = el.dataset.cat;
       position = 0;
       revealed = false;
+      closeFilterSheet();
       render();
     });
   });
@@ -1002,7 +1142,7 @@ function attachListeners() {
   const closeStats = document.getElementById('close-stats');
   if (closeStats) closeStats.addEventListener('click', closeStatsPanel);
   const overlay = document.getElementById('overlay');
-  if (overlay) overlay.addEventListener('click', closeStatsPanel);
+  if (overlay) overlay.addEventListener('click', closeAllPanels);
   const reset = document.getElementById('reset-btn');
   if (reset) reset.addEventListener('click', () => {
     if (confirm('Reset all progress? This cannot be undone.')) {
@@ -1047,9 +1187,39 @@ function closeStatsPanel() {
   document.getElementById('stats-panel').classList.remove('open');
 }
 
+function openFilter() {
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('filter-sheet').classList.add('open');
+}
+
+function closeFilterSheet() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('filter-sheet').classList.remove('open');
+}
+
+function closeAllPanels() {
+  closeStatsPanel();
+  closeFilterSheet();
+}
+
 // Keyboard shortcuts
 window.addEventListener('keydown', (e) => {
   if (document.getElementById('welcome') && !document.getElementById('welcome').classList.contains('hidden')) return;
+
+  // Esc closes any open panel
+  if (e.key === 'Escape') {
+    const filterOpen = document.getElementById('filter-sheet')?.classList.contains('open');
+    const statsOpen = document.getElementById('stats-panel')?.classList.contains('open');
+    if (filterOpen || statsOpen) {
+      closeAllPanels();
+      return;
+    }
+  }
+
+  // Don't fire shortcuts while a panel is open
+  if (document.getElementById('filter-sheet')?.classList.contains('open')) return;
+  if (document.getElementById('stats-panel')?.classList.contains('open')) return;
+
   if (currentDeck.length === 0) return;
   if (e.key === ' ') {
     e.preventDefault();
